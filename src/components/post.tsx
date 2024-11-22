@@ -190,12 +190,11 @@ const Post: React.FC<PostProps> = ({
     const currentUser = useSelector((state: RootState) => state.user.user);
 
     const currentUserId = currentUser ? currentUser._id : null;
-      console.log(currentUser?.nickName)
     // 게시글 작성자가 현재 로그인한 사용자인지 확인
-    const isOwner = userId && currentUserId === userId._id;
+    const isOwner = userId?._id && currentUserId === userId._id;
     
     console.log('currentUserId:', currentUserId);
-    console.log('userId:', userId);
+    console.log('userId:', userId?._id);
     console.log('isOwner:', isOwner);
     
     //@추가 - 댓글 수 관리
@@ -241,7 +240,6 @@ const Post: React.FC<PostProps> = ({
       // 같은 포스트 클릭 시 닫고, 다른 포스트 클릭 시 열기
       setActiveCommentPostId((prevId) => (prevId === postId ? null : postId));
     };
-    console.log(date)
     return (
         <StyledPost>
         <Header>

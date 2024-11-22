@@ -210,7 +210,7 @@ const MyPage: React.FC = () => {
         <ProfileArea>
           <Photo imageUrl={user?.profilePhoto? user?.profilePhoto : ProfileIcon}></Photo>
           <Info>
-            <UserName>{user?.name || "unknown"}</UserName>
+            <UserName>{user?.nickName || "unknown"}</UserName>
             <Summary>
               내 {highlight ? "게시글" : "좋아요"} {posts.length || 0}개
             </Summary>

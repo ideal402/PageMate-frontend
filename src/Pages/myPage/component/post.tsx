@@ -4,6 +4,12 @@ import CommentButton from "../../../components/comBtn";
 import Comment from "../../../components/comment";
 import { useEffect, useState } from "react";
 import ProfileIcon from "../../../assets/images/icon-user.png"
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../features/store";
+import Dialog from "../../../components/dialog";
+import { useNavigate } from "react-router-dom";
+import { deletePost } from "../../../features/post/postsSlice";
+import { FaEllipsisV } from "react-icons/fa";
 
 interface Comment {
     author: string;
@@ -14,6 +20,11 @@ interface Comment {
     post: {
       _id: string;
       id: string;
+      userId: {
+        _id: string;
+        nickName: string;
+        profilePhoto: string;
+      }; 
       bookTitle: string;
       bookAuthor: string;
       title: string;
@@ -106,15 +117,68 @@ const BTitle = styled.div``;
 const BAuthor = styled.div`
   color: #a4a4a4;
 `;
+const OptionsIcon = styled(FaEllipsisV)`
+  cursor: pointer;
+  font-size: 20px;
+  margin-left: 8px;
+  color: #666;
+`;
+
+const DialogContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const ActionButton = styled.div`
+  padding: 9px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  &:hover {
+    background: #e2e6ea;
+  }
+`;
 const Post: React.FC<PostProps> = ({ post }) => {
-  const { _id, bookTitle, bookAuthor, title, text, date, author, profilePhoto, likes, comments } = post;
+  const { _id, bookTitle, bookAuthor, title, text, date, userId, likes, comments } = post;
   
     const [commentsVisible, setCommentsVisible] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const currentUser = useSelector((state: RootState) => state.user.user);
+    const isOwner = currentUser?._id === userId?._id;
+    const navigate = useNavigate();
+    const dispatch = useDispatch<AppDispatch>();
+    const handleDialogOpen = () => {
+      setIsDialogOpen(true);
+    };
   
+    const handleDialogClose = () => {
+      setIsDialogOpen(false);
+    };
     const toggleCommentsVisibility = () => {
       setCommentsVisible(!commentsVisible);
     };
-  
+    const handleEdit = () => {
+      console.log("Navigating with post ID:", _id);
+      navigate("/post/write", {
+          state: {
+              post: {
+                  _id,
+                  title,
+                  text,
+                  bookTitle,
+                  bookAuthor,
+              },
+          },
+      });
+  };
+  const handleDelete = async (id: string) => {
+      try {
+          await dispatch(deletePost({ id })).unwrap();
+          setIsDialogOpen(false);
+      } catch (error: any) {
+          console.log(error)
+      }
+  };
     return (
       <StyledPost>
         <Header>
@@ -124,7 +188,20 @@ const Post: React.FC<PostProps> = ({ post }) => {
           </TitleDate>
           <ProfileInfo>
             <ProfilePhoto src={ProfileIcon} alt="Profile" />
-            <Name>{author}</Name>
+            <Name>{userId?.nickName}</Name>
+            {isOwner && (
+            <>
+              <OptionsIcon onClick={handleDialogOpen} />
+              {isDialogOpen && (
+                <Dialog isOpen={isDialogOpen} onClose={handleDialogClose}>
+                  <DialogContainer>
+                    <ActionButton onClick={handleEdit}>수정</ActionButton>
+                    <ActionButton onClick={()=>handleDelete(_id)}>삭제</ActionButton>
+                  </DialogContainer>
+                </Dialog>
+              )}
+            </>
+          )}
           </ProfileInfo>
         </Header>
         <Content>{text}</Content>
